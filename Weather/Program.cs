@@ -1,7 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddScoped<IWeatherService, DummyWeatherService>();
+builder.Services.AddSingleton<IApiKeyProviderService>(kps => new ApiKeyFileProviderService(new FileInfo("weatherapi.key")));
+builder.Services.AddScoped<IWeatherService, WeatherApiDotComService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

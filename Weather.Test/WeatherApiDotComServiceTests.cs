@@ -1,3 +1,5 @@
+using Moq;
+
 using Weather.Models;
 using Weather.Services;
 namespace Weather.Test;
@@ -6,6 +8,8 @@ namespace Weather.Test;
 public class WeatherApiDotComServiceTests
 {
     private ILogger<IWeatherService> _logger;
+
+    private string API_KEY = "<redacted>";
 
     public WeatherApiDotComServiceTests()
     {
@@ -18,10 +22,13 @@ public class WeatherApiDotComServiceTests
     {
         // Arrange
         var request = new WeatherRequest("London");
+        var keyProvider = new Mock<IApiKeyProviderService>();
+        keyProvider.Setup(kp => kp.GetServiceApiKey(It.Is<string>(s => s.Equals("weatherapi.com"))))
+                   .Returns(API_KEY);
+
+        var svc = new WeatherApiDotComService(_logger, keyProvider.Object);
 
         // Act
-        var svc = new WeatherApiDotComService(_logger);
-
         var response = await svc.GetWeatherAsync(request);
 
         // Assert
