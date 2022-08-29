@@ -58,13 +58,14 @@ public class WeatherApiDotComServiceTests
             );
     }
 
-    private void SetOkHttpResponse(string location, DateTime timestamp, string weather)
+    private void SetOkHttpResponse(string city, string country, DateTime timestamp, string weather)
     {
         var timeString = timestamp.ToString("yyyy-MM-dd HH:mm");
 
         var content = "{\n"
                     + "  \"location\": {\n"
-                    +$"    \"name\": \"{location}\",\n"
+                    +$"    \"name\": \"{city}\",\n"
+                    +$"    \"country\": \"{country}\",\n"
                     +$"    \"localtime\": \"{timeString}\"\n"
                     + "  },\n"
                     + "  \"current\": {\n"
@@ -74,20 +75,48 @@ public class WeatherApiDotComServiceTests
                     + "  }\n"
                     + "}\n";
 
+        Console.Write(content);
+
         SetHttpResponse(System.Net.HttpStatusCode.OK, content);
     }
 
     [TestMethod]
-    public async Task GetWeatherAsync_Always_ReturnsResponse()
+    public async Task GetWeatherAsync_WithCountryName_ReturnsExpectedResponse()
     {
         // Arrange
         var city = "London";
+        var country = "South Africa";
         var expectedTimestamp = new DateTime(2022,07,06,05,04,00); // 2022-07-06T05:04:00
         var expectedWeather = "Partly cloudy";
 
-        var request = new WeatherRequest(city);
+        var request = new WeatherRequest(city, country);
 
-        SetOkHttpResponse(city, expectedTimestamp, expectedWeather);
+        SetOkHttpResponse(city, country, expectedTimestamp, expectedWeather);
+
+        var svc = new WeatherApiDotComService(_logger, _keyProvider, _httpClientFactory);
+
+        // Act
+        var response = await svc.GetWeatherAsync(request);
+
+        // Assert
+        response.Should().NotBeNull();
+
+        response.LocalTime.Should().Be(expectedTimestamp);
+        response.Weather.Should().Be(expectedWeather);
+    }
+
+    [TestMethod]
+    public async Task GetWeatherAsync_WithCountryCode_ReturnsExpectedResponse()
+    {
+        // Arrange
+        var city = "London";
+        var country = "ZA";
+        var expectedTimestamp = new DateTime(2022,07,06,05,04,00); // 2022-07-06T05:04:00
+        var expectedWeather = "Sunny";
+
+        var request = new WeatherRequest(city, country);
+
+        SetOkHttpResponse(city, country, expectedTimestamp, expectedWeather);
 
         var svc = new WeatherApiDotComService(_logger, _keyProvider, _httpClientFactory);
 
