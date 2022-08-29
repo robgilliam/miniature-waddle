@@ -1,0 +1,48 @@
+# For use in VS Code with Huachao Mao's REST Client extension
+# See https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+# Set the WEATHER_API_KEY as an environment variable first
+
+### Send request without specifying country - SUPPORTED (obvs)
+GET https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London HTTP/1.1
+Accept: application/json
+
+### Send request specifying country by name - SUPPORTED
+GET https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London,South%20Africa HTTP/1.1
+Accept: application/json
+
+### Send request specifying country by ISO 3166-1 alpha-2 code - SUPPORTED
+GET https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London,ZA HTTP/1.1
+Accept: application/json
+
+### Send request specifying country by ISO 3166-1 alpha-3 code - NOT SUPPORTED (this returns Zaf in Iran!)
+GET https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London,ZAF HTTP/1.1
+Accept: application/json
+
+### Send request specifying country by ISO 3166-1 numeric code - NOT SUPPORTED (returns London, UK, instead)
+GET https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London,710 HTTP/1.1
+Accept: application/json
+
+### The verb ...
+PUT https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London HTTP/1.1
+Accept: application/json
+
+### ... doesn't matter ...
+POST https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London HTTP/1.1
+Accept: application/json
+
+### ... at all ...
+DELETE https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London HTTP/1.1
+Accept: application/json
+
+### ... (at all, ...
+PATCH https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London HTTP/1.1
+Accept: application/json
+
+### ... at all)!
+OPTIONS https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London HTTP/1.1
+Accept: application/json
+
+### Although HEAD works
+HEAD https://api.weatherapi.com/v1/current.json?key={{$processEnv WEATHER_API_KEY}}&q=London HTTP/1.1
+Accept: application/json
