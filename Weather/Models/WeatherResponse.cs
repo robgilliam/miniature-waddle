@@ -6,8 +6,7 @@ public class WeatherResponse
 
     public DateTime LocalTime {get; init;} = DateTime.Now;
 
-    // The temperature in tenths of a degree
-    public float Temperature {get; init;}
+    public string Weather {get; init;} = "Unknown";
 
     public WeatherResponse(WeatherRequest request)
     {

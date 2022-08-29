@@ -42,12 +42,12 @@ public class WeatherApiDotComService : IWeatherService
 
         // Extract the values we need from the API response
         var localtime = apiResponse!.location.localtime.Value;
-        var temp = apiResponse.current.temp_c;
+        var weather = apiResponse.current.condition.text;
 
         response = new WeatherResponse(request)
         {
             LocalTime = DateTime.Parse(localtime),
-            Temperature = temp
+            Weather = weather
         };
 
         _logger.LogTrace("WeatherApiDotComService.GetWeatherAsync - EXIT");
