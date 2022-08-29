@@ -1,6 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddHttpClient();
+
 builder.Services.AddSingleton<IApiKeyProviderService>(kps => new ApiKeyFileProviderService(new FileInfo("weatherapi.key")));
 builder.Services.AddScoped<IWeatherService, WeatherApiDotComService>();
 
