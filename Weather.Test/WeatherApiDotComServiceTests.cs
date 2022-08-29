@@ -58,10 +58,9 @@ public class WeatherApiDotComServiceTests
             );
     }
 
-    private void SetOkHttpResponse(string location, DateTime timestamp, float tempC)
+    private void SetOkHttpResponse(string location, DateTime timestamp, string weather)
     {
         var timeString = timestamp.ToString("yyyy-MM-dd HH:mm");
-        var tempString = tempC.ToString("0.0");
 
         var content = "{\n"
                     + "  \"location\": {\n"
@@ -69,7 +68,9 @@ public class WeatherApiDotComServiceTests
                     +$"    \"localtime\": \"{timeString}\"\n"
                     + "  },\n"
                     + "  \"current\": {\n"
-                    +$"    \"temp_c\": {tempString}\n"
+                    + "    \"condition\": {\n"
+                    +$"      \"text\": \"{weather}\"\n"
+                    + "    }\n"
                     + "  }\n"
                     + "}\n";
 
@@ -82,11 +83,11 @@ public class WeatherApiDotComServiceTests
         // Arrange
         var city = "London";
         var expectedTimestamp = new DateTime(2022,07,06,05,04,00); // 2022-07-06T05:04:00
-        var expectedTemp = 13.6F;
+        var expectedWeather = "Partly cloudy";
 
         var request = new WeatherRequest(city);
 
-        SetOkHttpResponse(city, expectedTimestamp, expectedTemp);
+        SetOkHttpResponse(city, expectedTimestamp, expectedWeather);
 
         var svc = new WeatherApiDotComService(_logger, _keyProvider, _httpClientFactory);
 
@@ -97,30 +98,6 @@ public class WeatherApiDotComServiceTests
         response.Should().NotBeNull();
 
         response.LocalTime.Should().Be(expectedTimestamp);
-        response.Temperature.Should().Be(expectedTemp);
-    }
-
-    [TestMethod]
-    public async Task GetWeatherAsync_NegativeTemperature_ReturnsResponse()
-    {
-        // Arrange
-        var city = "London";
-        var expectedTimestamp = new DateTime(2022,01,02,03,04,00); // 2022-01-02T03:04:00
-        var expectedTemp = -1.2F;
-
-        var request = new WeatherRequest(city);
-
-        SetOkHttpResponse(city, expectedTimestamp, expectedTemp);
-
-        var svc = new WeatherApiDotComService(_logger, _keyProvider, _httpClientFactory);
-
-        // Act
-        var response = await svc.GetWeatherAsync(request);
-
-        // Assert
-        response.Should().NotBeNull();
-
-        response.LocalTime.Should().Be(expectedTimestamp);
-        response.Temperature.Should().Be(expectedTemp);
+        response.Weather.Should().Be(expectedWeather);
     }
 }

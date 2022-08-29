@@ -17,7 +17,7 @@ public class DummyWeatherService : IWeatherService
             return new WeatherResponse(request)
             {
                 LocalTime = DateTime.Now,
-                Temperature = 12.3F // Note: that's F for float, not Fahrenheit!
+                Weather = "Sunny"
             };
         });
 
