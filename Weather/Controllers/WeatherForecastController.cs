@@ -18,12 +18,10 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet(Name = "GetWeather")]
-    public async Task<WeatherResponse> GetAsync(string city)
+    public async Task<WeatherResponse> GetAsync(string city, string country)
     {
-        // Process the parameters
-
         // Get the weather data for the specified city
-        var request = new WeatherRequest(city);
+        var request = new WeatherRequest(city, country);
 
         return await _service.GetWeatherAsync(request);
     }

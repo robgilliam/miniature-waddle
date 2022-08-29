@@ -35,7 +35,7 @@ public class WeatherApiDotComService : IWeatherService
         var client = _httpClientFactory.CreateClient();
 
         // TODO LOGGING - consider timing the API call
-        var res = await client.GetStringAsync($"https://api.weatherapi.com/v1/current.json?key={apiKey}&q={request.City}");
+        var res = await client.GetStringAsync($"https://api.weatherapi.com/v1/current.json?key={apiKey}&q={request.City},{request.Country}");
 
         // TODO ERROR HANDLING - Better (or some!) failure handling
         dynamic? apiResponse = JsonConvert.DeserializeObject(res);
