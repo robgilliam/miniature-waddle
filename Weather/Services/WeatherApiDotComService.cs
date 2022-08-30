@@ -26,11 +26,17 @@ public class WeatherApiDotComService : IWeatherService
     {
         WeatherResponse response;
 
-        _logger.LogTrace("WeatherApiDotComService.GetWeatherAsync - ENTRY");
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            _logger.LogTrace("WeatherApiDotComService.GetWeatherAsync - ENTRY");
+            _logger.LogTrace($"WeatherApiDotComService.GetWeatherAsync - request.City='{request.City}'");
+            _logger.LogTrace($"WeatherApiDotComService.GetWeatherAsync - request.Countr='{request.Country}'");
+            _logger.LogTrace($"WeatherApiDotComService.GetWeatherAsync - request.TemperatureType='{request.TemperatureType.ToString()}'");
+        }
 
         var apiKey = _keyProviderservice.GetServiceApiKey(SERVICE_ID);
 
-        // TODO ERROR HANDLING - Handle if apiKey is null (unknown service)
+        // TODO ERROR HANDLING - Handle if apiKey is null (unknown service/no keyfile)
 
         var client = _httpClientFactory.CreateClient();
 
@@ -44,13 +50,27 @@ public class WeatherApiDotComService : IWeatherService
         var localtime = apiResponse!.location.localtime.Value;
         var weather = apiResponse.current.condition.text;
 
-        response = new WeatherResponse(request)
+		// Select the temperature to be returned based on the requested temperature type
+        var temperature = request.TemperatureType == TemperatureType.Celsius
+		                  ? apiResponse.current.temp_c
+						  : apiResponse.current.temp_f;
+
+        response = new WeatherResponse()
         {
             LocalTime = DateTime.Parse(localtime),
-            Weather = weather
+            Weather = weather,
+            Temperature = temperature,
+            TemperatureType = request.TemperatureType
         };
 
-        _logger.LogTrace("WeatherApiDotComService.GetWeatherAsync - EXIT");
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            _logger.LogTrace("WeatherApiDotComService.GetWeatherAsync - EXIT");
+            _logger.LogTrace($"WeatherApiDotComService.GetWeatherAsync - response.LocalTime='{response.LocalTime}'");
+            _logger.LogTrace($"WeatherApiDotComService.GetWeatherAsync - response.Weather='{response.Weather}'");
+            _logger.LogTrace($"WeatherApiDotComService.GetWeatherAsync - response.Temperature='{response.Temperature.ToString("0.0")}'");
+            _logger.LogTrace($"WeatherApiDotComService.GetWeatherAsync - response.TemperatureType='{response.TemperatureType}'");
+        }
 
         return response;
     }
