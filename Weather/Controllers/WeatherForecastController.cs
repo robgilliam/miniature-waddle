@@ -18,10 +18,21 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet(Name = "GetWeather")]
-    public async Task<WeatherResponse> GetAsync(string city, string country)
+    public async Task<WeatherResponse> GetAsync(string city, string country, string temperatureType)
     {
-        // Get the weather data for the specified city
-        var request = new WeatherRequest(city, country);
+		// TODO VALIDATION - Validate temperature type properly
+		//
+		//                   Suggest: create and inject a parameter validation service
+		//                   which can be unit-tested separately
+		//
+		//                   Or: pass received query parameters off to a WeatherRequest
+		//                   builder service that validates the parameters and returns
+		//                   the  appropriate WeatherRequest object or an error/throws an
+		//                   exception if the parameters can't be used.
+		var tempType = temperatureType.StartsWith("F") ? TemperatureType.Fahrenheit : TemperatureType.Celsius;
+
+        // Get the weather data for the specified parameters
+        var request = new WeatherRequest(city, country, tempType);
 
         return await _service.GetWeatherAsync(request);
     }

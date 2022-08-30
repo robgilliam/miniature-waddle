@@ -42,11 +42,19 @@ public class WeatherApiDotComServiceTests
         _httpClientFactory = httpClientFactoryMock.Object;
     }
 
+    private static float ConvertTempCtoF(float tempC) => tempC * 5 / 9 + 32.0F;
+
     private void SetHttpResponse(System.Net.HttpStatusCode statusCode, string? content = null)
     {
         _protectedHttpMessageHandlerMock
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
+				// TODO TESTING - Currently the mock does not care what request it gets and
+				//                simply returns the specified resulte for any request.
+				//
+				//                It should be set up to only respond to the correct URI, including
+				//                API key and expected query params, in order to ensure that that
+				//                service is sending the correct request to the API.
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>()
             ).ReturnsAsync(
@@ -58,9 +66,11 @@ public class WeatherApiDotComServiceTests
             );
     }
 
-    private void SetOkHttpResponse(string city, string country, DateTime timestamp, string weather)
+    private void SetOkHttpResponse(string city, string country, DateTime timestamp, string weather, float tempC)
     {
         var timeString = timestamp.ToString("yyyy-MM-dd HH:mm");
+        var tempCString = tempC.ToString("0.0");
+        var tempFString = ConvertTempCtoF(tempC).ToString("0.0");
 
         var content = "{\n"
                     + "  \"location\": {\n"
@@ -71,11 +81,11 @@ public class WeatherApiDotComServiceTests
                     + "  \"current\": {\n"
                     + "    \"condition\": {\n"
                     +$"      \"text\": \"{weather}\"\n"
-                    + "    }\n"
+                    + "    },\n"
+                    +$"    \"temp_c\": {tempCString},\n"
+                    +$"    \"temp_f\": {tempFString},\n"
                     + "  }\n"
                     + "}\n";
-
-        Console.Write(content);
 
         SetHttpResponse(System.Net.HttpStatusCode.OK, content);
     }
@@ -86,14 +96,16 @@ public class WeatherApiDotComServiceTests
         // Arrange
         var city = "London";
         var country = "South Africa";
+        var tempType = TemperatureType.Celsius;
+
         var expectedTimestamp = new DateTime(2022,07,06,05,04,00); // 2022-07-06T05:04:00
         var expectedWeather = "Partly cloudy";
+        var expectedTemp = 12.3F;
 
-        var request = new WeatherRequest(city, country);
-
-        SetOkHttpResponse(city, country, expectedTimestamp, expectedWeather);
+        SetOkHttpResponse(city, country, expectedTimestamp, expectedWeather, expectedTemp);
 
         var svc = new WeatherApiDotComService(_logger, _keyProvider, _httpClientFactory);
+        var request = new WeatherRequest(city, country, tempType);
 
         // Act
         var response = await svc.GetWeatherAsync(request);
@@ -103,6 +115,8 @@ public class WeatherApiDotComServiceTests
 
         response.LocalTime.Should().Be(expectedTimestamp);
         response.Weather.Should().Be(expectedWeather);
+        response.Temperature.Should().Be(expectedTemp);
+        response.TemperatureType.Should().Be(tempType);
     }
 
     [TestMethod]
@@ -111,14 +125,16 @@ public class WeatherApiDotComServiceTests
         // Arrange
         var city = "London";
         var country = "ZA";
+        var tempType = TemperatureType.Celsius;
+
         var expectedTimestamp = new DateTime(2022,07,06,05,04,00); // 2022-07-06T05:04:00
         var expectedWeather = "Sunny";
+        var expectedTemp = 29.8F;
 
-        var request = new WeatherRequest(city, country);
-
-        SetOkHttpResponse(city, country, expectedTimestamp, expectedWeather);
+        SetOkHttpResponse(city, country, expectedTimestamp, expectedWeather, expectedTemp);
 
         var svc = new WeatherApiDotComService(_logger, _keyProvider, _httpClientFactory);
+        var request = new WeatherRequest(city, country, tempType);
 
         // Act
         var response = await svc.GetWeatherAsync(request);
@@ -128,5 +144,44 @@ public class WeatherApiDotComServiceTests
 
         response.LocalTime.Should().Be(expectedTimestamp);
         response.Weather.Should().Be(expectedWeather);
+        response.Temperature.Should().Be(expectedTemp);
+        response.TemperatureType.Should().Be(tempType);
+    }
+
+    [TestMethod]
+    public async Task GetWeatherAsync_ForFahrenheit_ReturnsExpectedResponse()
+    {
+        // Arrange
+        var city = "London";
+        var country = "Canada";
+        var tempType = TemperatureType.Fahrenheit;
+
+        var expectedTimestamp = new DateTime(2022,07,06,05,04,00); // 2022-07-06T05:04:00
+        var expectedWeather = "Sunny";
+        var expectedTemp = 29.8F;
+
+        var expectedTempF = ConvertTempCtoF(expectedTemp);
+
+        SetOkHttpResponse(city, country, expectedTimestamp, expectedWeather, expectedTemp);
+
+        var svc = new WeatherApiDotComService(_logger, _keyProvider, _httpClientFactory);
+        var request = new WeatherRequest(city, country, tempType);
+
+        // Act
+        var response = await svc.GetWeatherAsync(request);
+
+        // Assert
+        response.Should().NotBeNull();
+
+        response.LocalTime.Should().Be(expectedTimestamp);
+        response.Weather.Should().Be(expectedWeather);
+
+        // Can use string conversion with precision format ...
+        response.Temperature.ToString("0.0").Should().Be(expectedTempF.ToString("0.0"));
+
+        // ... or approximate floating point comparison, as preferred
+        response.Temperature.Should().BeApproximately(expectedTempF, 0.1F);
+
+        response.TemperatureType.Should().Be(tempType);
     }
 }
