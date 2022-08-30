@@ -23,6 +23,18 @@ Experian tech test
 
 The port used to access the API is logged on startup, and can be changed by editing the `applicationUrl` value in the `launchSettings.json` file
 
+### Specifying the API key
+
+In order for the service to access the weatherapi.com API, you will need to specify your API key, obtained from weatherapi.com. To do this add a key file called `weatherapi.key` to the `Weather` folder, and add the following line:
+
+    weatherapi.com:{key}
+    
+where `{key}` is your API key, e.g.:
+
+    weatherapi.com:f087593ea74f438293b161594221808
+
+(note: the above example is not a valid key, or shouldn't be!)
+
 ## To access the service
 
 * Send HTTP/1.1 GET requests to the following URL:
